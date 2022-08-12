@@ -104,32 +104,32 @@ namespace aveng {
 	void XOne::loadAppObjects() 
 	{
 
-		//auto triangle = AvengAppObject::createAppObject(THEME_1);
-		//triangle.meta.type = SCENE;
-		//triangle.model = AvengModel::drawTriangle(engineDevice);
-		//appObjects.push_back(std::move(triangle));
+		auto ship = AvengAppObject::createAppObject(THEME_1);
+		ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship_demo.obj");
+		ship.transform.translation = { 0.f, 0.f, 0.f };
+		appObjects.emplace(ship.getId(), std::move(ship));
 
-		for (size_t i = 0; i < 1; i++)
-		{
+		//for (size_t i = 0; i < 1; i++)
+		//{
 
-			for (size_t j = 0; j < 1; j++)
-			{
+		//	for (size_t j = 0; j < 1; j++)
+		//	{
 
-				auto grid = AvengAppObject::createAppObject(THEME_2);
-				grid.meta.type = GROUND;
-				grid.model = AvengModel::createModelFromFile(engineDevice, "3D/plane.obj");
-				grid.transform.translation = { 136.0f * i, -.1f, 0.0f};
-				appObjects.emplace(grid.getId(), std::move(grid));
+		//		auto grid = AvengAppObject::createAppObject(THEME_2);
+		//		grid.meta.type = GROUND;
+		//		grid.model = AvengModel::createModelFromFile(engineDevice, "3D/plane.obj");
+		//		grid.transform.translation = { 136.0f * i, -.1f, 0.0f};
+		//		appObjects.emplace(grid.getId(), std::move(grid));
 
-				auto grid2 = AvengAppObject::createAppObject(THEME_1);
-				grid2.meta.type = GROUND;
-				grid2.model = AvengModel::createModelFromFile(engineDevice, "3D/plane.obj");
-				grid2.transform.translation = { 150.0f, -.1f, 170.0f };
-				appObjects.emplace(grid2.getId(), std::move(grid2));
+				//auto grid2 = AvengAppObject::createAppObject(THEME_1);
+				//grid2.meta.type = GROUND;
+				//grid2.model = AvengModel::createModelFromFile(engineDevice, "3D/plane.obj");
+				//grid2.transform.translation = { 150.0f, -.1f, 170.0f };
+				//appObjects.emplace(grid2.getId(), std::move(grid2));
 
-			}
+		//	}
 
-		}
+		//}
 
 		//for (size_t i = 0; i < 10; i++) {
 		//	for (size_t j = 0; j < 15; j++) {
@@ -144,25 +144,25 @@ namespace aveng {
 		//	}
 		//}
 
-		for (size_t i = 0; i < 10; i++)
-		{
-			
-			for (size_t j = 0; j < 10; j++) 
-			{
+		//for (size_t i = 0; i < 10; i++)
+		//{
+		//	
+		//	for (size_t j = 0; j < 10; j++) 
+		//	{
 
-				for (size_t k = 0; k < 4; k++) {
-					auto sphere = AvengAppObject::createAppObject(NO_TEXTURE);
-					sphere.meta.type = SCENE;
-					sphere.model = AvengModel::createModelFromFile(engineDevice, "3D/sphere.obj");
-					sphere.transform.translation = { static_cast<float>(i) * 1.5f, static_cast<float>(j) * -1.0f, static_cast<float>(k) * 2.0f };
-					sphere.transform.scale = {0.1f, 0.1f, 0.1f};
-					appObjects.emplace(sphere.getId(), std::move(sphere));
-				
-				}
-			
-			}
+		//		for (size_t k = 0; k < 4; k++) {
+		//			auto sphere = AvengAppObject::createAppObject(NO_TEXTURE);
+		//			sphere.meta.type = SCENE;
+		//			sphere.model = AvengModel::createModelFromFile(engineDevice, "3D/sphere.obj");
+		//			sphere.transform.translation = { static_cast<float>(i) * 1.5f, static_cast<float>(j) * -1.0f, static_cast<float>(k) * 2.0f };
+		//			sphere.transform.scale = {0.1f, 0.1f, 0.1f};
+		//			appObjects.emplace(sphere.getId(), std::move(sphere));
+		//		
+		//		}
+		//	
+		//	}
 
-		}
+		//}
 
 	}
 
