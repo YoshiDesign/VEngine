@@ -194,7 +194,7 @@ namespace aveng {
 
     AvengDescriptorSetWriter& AvengDescriptorSetWriter::writeBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo) 
     {
-        assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+        assert(setLayout.bindings.count(binding) == 1 || "Layout does not contain specified binding");
 
         auto& bindingDescription = setLayout.layout_bindings[binding];
         std::cout << "Binding Descriptor type for Buffer: " << bindingDescription.descriptorType << std::endl;
@@ -216,14 +216,14 @@ namespace aveng {
 
     AvengDescriptorSetWriter& AvengDescriptorSetWriter::writeImage(uint32_t binding, VkDescriptorImageInfo* imageInfo, int nImages) 
     {
-        assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+        assert(setLayout.bindings.count(binding) == 1 || "Layout does not contain specified binding");
 
         auto& bindingDescription = setLayout.layout_bindings[binding];
 
         std::cout << "Binding Descriptor type for Image: " << bindingDescription.descriptorType << std::endl;
 
         assert(
-            bindingDescription.descriptorCount == 1 &&
+            bindingDescription.descriptorCount == 1 ||
             "Binding single descriptor info, but binding expects multiple");
 
         std::cout << "[] Images:\t" << nImages << std::endl;

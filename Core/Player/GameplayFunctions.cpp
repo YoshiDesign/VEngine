@@ -23,7 +23,7 @@ namespace aveng {
 	/**/
 	bool GameplayFunctions::doBarrelRoll(AvengAppObject& appObject, float dt, int dir)
 	{
-		
+		return true;
 	}
 
 	// Delta X vectoring

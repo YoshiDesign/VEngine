@@ -223,6 +223,7 @@ namespace aveng {
 			fragBuffers[i]->map();
 		}
 
+		std::cout << "Creating global Descriptor set and adding bindings (2)..." << std::endl;
 		// Descriptor Layout 0 -- Global
 		std::unique_ptr<AvengDescriptorSetLayout> globalDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
@@ -231,6 +232,7 @@ namespace aveng {
 			//.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();	// Initialize the Descriptor Set Layout
 
+		std::cout << "Creating frag Descriptor set and adding bindings (1)..." << std::endl;
 		// Descriptor Set 1 -- Per object
 		std::unique_ptr<AvengDescriptorSetLayout> fragDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
@@ -246,11 +248,13 @@ namespace aveng {
 			// Write first set - Uniform Buffer containing our UBO and our Imager Sampler
 			auto bufferInfo = uboBuffers[i]->descriptorInfo();
 			auto imageInfo = imageSystem.descriptorInfoForAllImages();
+			std::cout << "Writing Global DescriptorSet" << std::endl;
 			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)	// First Binding
 				.writeImage(1, imageInfo.data(), imageSystem.texture_paths.size()) // Second Binding
 				.build(globalDescriptorSets[i]);
 
+			std::cout << "Writing Frag DescriptorSet" << std::endl;
 			// Write second set - Also a uniform buffer
 			auto fragBufferInfo = fragBuffers[i]->descriptorInfo(sizeof(ObjectRenderSystem::FragUbo), 0);
 			AvengDescriptorSetWriter(*fragDescriptorSetLayout, *globalPool)
