@@ -65,22 +65,22 @@ namespace aveng {
 					commandBuffer,
 					camera,
 					globalDescriptorSets[frameIndex],
-					fragDescriptorSets[frameIndex],
+					objectDescriptorSets[frameIndex],
 					appObjects
 				};
 
 				// Pack our vertex shader uniform buffer
-				ubo.projection = camera.getProjection();
-				ubo.view = camera.getView();
+				u_GlobalData.projection = camera.getProjection();
+				u_GlobalData.view = camera.getView();
 
 				// Update our global uniform buffer 
-				uboBuffers[frameIndex]->writeToBuffer(&ubo);
-				uboBuffers[frameIndex]->flush();
+				u_GlobalBuffers[frameIndex]->writeToBuffer(&u_GlobalData);
+				u_GlobalBuffers[frameIndex]->flush();
 
 				// Render
 				renderer.beginSwapChainRenderPass(commandBuffer);
 
-				objectRenderSystem.render(frame_content, data, *fragBuffers[frameIndex]);
+				objectRenderSystem.render(frame_content, data, *u_ObjBuffers[frameIndex]);
 				pointLightSystem.render(frame_content);
 
 				aveng_imgui.newFrame();
@@ -108,6 +108,11 @@ namespace aveng {
 		ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship_demo.obj");
 		ship.transform.translation = { 0.f, 0.f, 0.f };
 		appObjects.emplace(ship.getId(), std::move(ship));
+
+		auto ship_1 = AvengAppObject::createAppObject(THEME_3);
+		ship_1.model = AvengModel::createModelFromFile(engineDevice, "3D/ship_demo.obj");
+		ship_1.transform.translation = { 25.f, 0.f, 0.f };
+		appObjects.emplace(ship_1.getId(), std::move(ship_1));
 
 		//for (size_t i = 0; i < 1; i++)
 		//{
@@ -144,25 +149,25 @@ namespace aveng {
 		//	}
 		//}
 
-		//for (size_t i = 0; i < 10; i++)
-		//{
-		//	
-		//	for (size_t j = 0; j < 10; j++) 
-		//	{
+		for (size_t i = 0; i < 10; i++)
+		{
+			
+			for (size_t j = 0; j < 10; j++) 
+			{
 
-		//		for (size_t k = 0; k < 4; k++) {
-		//			auto sphere = AvengAppObject::createAppObject(NO_TEXTURE);
-		//			sphere.meta.type = SCENE;
-		//			sphere.model = AvengModel::createModelFromFile(engineDevice, "3D/sphere.obj");
-		//			sphere.transform.translation = { static_cast<float>(i) * 1.5f, static_cast<float>(j) * -1.0f, static_cast<float>(k) * 2.0f };
-		//			sphere.transform.scale = {0.1f, 0.1f, 0.1f};
-		//			appObjects.emplace(sphere.getId(), std::move(sphere));
-		//		
-		//		}
-		//	
-		//	}
+				for (size_t k = 0; k < 4; k++) {
+					auto sphere = AvengAppObject::createAppObject(NO_TEXTURE);
+					sphere.meta.type = SCENE;
+					sphere.model = AvengModel::createModelFromFile(engineDevice, "3D/sphere.obj");
+					sphere.transform.translation = { static_cast<float>(i) * 1.5f, static_cast<float>(j) * -1.0f, static_cast<float>(k) * 2.0f };
+					sphere.transform.scale = {0.1f, 0.1f, 0.1f};
+					appObjects.emplace(sphere.getId(), std::move(sphere));
+				
+				}
+			
+			}
 
-		//}
+		}
 
 	}
 
@@ -192,6 +197,14 @@ namespace aveng {
 	void XOne::Setup()
 	{
 
+		VkPhysicalDeviceFeatures m;
+		vkGetPhysicalDeviceFeatures(engineDevice.physicalDevice(), &m);
+		if (!m.shaderSampledImageArrayDynamicIndexing) {
+			std::runtime_error("Your hardware does not support this specific VulkanAPI implementation. Sorry!");
+		}
+		else
+			std::cout << "Good to go!" << std::endl;
+
 		/*
 		* Call the pool builder to setup our pool for construction.
 		*/
@@ -204,23 +217,23 @@ namespace aveng {
 			.build();
 
 		// Create global uniform buffers mapped into device memory
-		uboBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		fragBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < uboBuffers.size(); i++) {
-			uboBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
+		u_GlobalBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+		u_ObjBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < u_GlobalBuffers.size(); i++) {
+			u_GlobalBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
 				sizeof(GlobalUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-			uboBuffers[i]->map();
+			u_GlobalBuffers[i]->map();
 		}
-		for (int i = 0; i < fragBuffers.size(); i++) {
-			fragBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
-				sizeof(ObjectRenderSystem::FragUbo) * 16,
+		for (int i = 0; i < u_ObjBuffers.size(); i++) {
+			u_ObjBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
+				sizeof(ObjectRenderSystem::ObjectUniformData) * 16,
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-			fragBuffers[i]->map();
+			u_ObjBuffers[i]->map();
 		}
 
 		std::cout << "Creating global Descriptor set and adding bindings (2)..." << std::endl;
@@ -232,21 +245,21 @@ namespace aveng {
 			//.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();	// Initialize the Descriptor Set Layout
 
-		std::cout << "Creating frag Descriptor set and adding bindings (1)..." << std::endl;
+		std::cout << "Creating obj Descriptor set and adding bindings (1)..." << std::endl;
 		// Descriptor Set 1 -- Per object
-		std::unique_ptr<AvengDescriptorSetLayout> fragDescriptorSetLayout =
+		std::unique_ptr<AvengDescriptorSetLayout> objDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER /*_DYNAMIC*/, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
 		// Write our descriptors according to the layout's bindings once for every possible frame in flight
 		globalDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		fragDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+		objectDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
 		for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			// Write first set - Uniform Buffer containing our UBO and our Imager Sampler
-			auto bufferInfo = uboBuffers[i]->descriptorInfo(sizeof(GlobalUbo), 0);
+			auto bufferInfo = u_GlobalBuffers[i]->descriptorInfo(sizeof(GlobalUbo), 0);
 			auto imageInfo = imageSystem.descriptorInfoForAllImages();
 			std::cout << "Writing Global DescriptorSet" << std::endl;
 			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *globalPool)
@@ -254,19 +267,19 @@ namespace aveng {
 				.writeImage(1, imageInfo.data(), imageSystem.texture_paths.size()) // Second Binding
 				.build(globalDescriptorSets[i]);
 
-			std::cout << "Writing Frag DescriptorSet" << std::endl;
+			std::cout << "Writing Object DescriptorSet" << std::endl;
 			// Write second set - Also a uniform buffer
-			auto fragBufferInfo = fragBuffers[i]->descriptorInfo(sizeof(ObjectRenderSystem::FragUbo), 0);
-			AvengDescriptorSetWriter(*fragDescriptorSetLayout, *globalPool)
-				.writeBuffer(0, &fragBufferInfo)
-				.build(fragDescriptorSets[i]);
+			auto objBufferInfo = u_ObjBuffers[i]->descriptorInfo(sizeof(ObjectRenderSystem::ObjectUniformData), 0);
+			AvengDescriptorSetWriter(*objDescriptorSetLayout, *globalPool)
+				.writeBuffer(0, &objBufferInfo)
+				.build(objectDescriptorSets[i]);
 		}
 
 		// Rendering subsystem initializers
 		objectRenderSystem.initialize(
 			renderer.getSwapChainRenderPass(),
 			globalDescriptorSetLayout->getDescriptorSetLayout(),
-			fragDescriptorSetLayout->getDescriptorSetLayout()
+			objDescriptorSetLayout->getDescriptorSetLayout()
 		);
 		pointLightSystem.initialize(
 			renderer.getSwapChainRenderPass(),

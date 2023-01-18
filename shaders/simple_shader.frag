@@ -16,16 +16,16 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	vec4 lightColor;
 } ubo;
 
-layout(set = 1, binding = 0) uniform FragUbo {
-    uint imDex;
-} fubo;
+layout(set = 1, binding = 0) uniform ObjectUniformData {
+    uint texIndex;
+} u_ObjData;
 
 void main() {
 
     vec4 result = vec4(fragColor, 1.0);
 
-    if (fubo.imDex != 8) {  // 8 will omit texture and default to vertex colors
-        result = texture(texSampler[fubo.imDex], fragTexCoord);
+    if (u_ObjData.texIndex != 8) {  // 8 will omit texture and default to vertex colors
+        result = texture(texSampler[u_ObjData.texIndex], fragTexCoord);
     }
 
     // Gamma correction

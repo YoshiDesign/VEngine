@@ -17,9 +17,9 @@ namespace aveng {
 
 	}
 
-	void ObjectRenderSystem::initialize( VkRenderPass renderPass, VkDescriptorSetLayout globalDescriptorSetLayout, VkDescriptorSetLayout fragDescriptorSetLayout)
+	void ObjectRenderSystem::initialize( VkRenderPass renderPass, VkDescriptorSetLayout globalDescriptorSetLayout, VkDescriptorSetLayout objDescriptorSetLayout)
 	{
-		VkDescriptorSetLayout descriptorSetLayouts[2] = { globalDescriptorSetLayout , fragDescriptorSetLayout };
+		VkDescriptorSetLayout descriptorSetLayouts[2] = { globalDescriptorSetLayout , objDescriptorSetLayout };
 		createPipelineLayout(descriptorSetLayouts);
 		createPipeline(renderPass);
 	}
@@ -89,7 +89,7 @@ namespace aveng {
 		);
 	}
 
-	void ObjectRenderSystem::render(FrameContent& frame_content, Data& data, AvengBuffer& fragBuffer)
+	void ObjectRenderSystem::render(FrameContent& frame_content, Data& data, AvengBuffer& u_ObjBuffer)
 	{
 
 		// Bind our current pipeline configuration
@@ -118,13 +118,13 @@ namespace aveng {
 		*/
 		for (auto& kv : frame_content.appObjects)
 		{
-			AvengAppObject& obj = kv.second;
+			//AvengAppObject& obj = kv.second;
 
-			std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
-			// This object's texture's dynamic offset in the Dynamic UBOs memory
-			// uint32_t dynamicOffset = obj.get_texture() * static_cast<uint32_t>(sizeof(FragUbo)) * deviceAlignment;
+			//std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;			//std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
+			// This object's texture-index's dynamic offset in the Dynamic UBOs memory
+			uint32_t dynamicOffset = kv.second.get_texture() * sizeof(ObjectUniformData);
 
-			FragUbo fubo{ obj.get_texture() };	// Texture index -- within our dynamic UBO (FragUbo is a bad name for this, but that's its only usecase right now)
+			ObjectUniformData u_ObjData{ kv.second.get_texture() };	// Contains texture index
 
 			SimplePushConstantData push{};
 			
@@ -134,28 +134,26 @@ namespace aveng {
 			}
 
 			// The matrix describing this model's current orientation
-			push.modelMatrix  = obj.transform._mat4();
-			push.normalMatrix = obj.transform.normalMatrix();
-
+			push.modelMatrix  = kv.second.transform._mat4();
+			push.normalMatrix = kv.second.transform.normalMatrix();
 
 			/*if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
 				DEBUG("Max Uniform Buffer Range Exceeded.");
 				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
 			}*/
-				
+
 			// Bind the descriptor set for our pixel (fragment) shader
-			fragBuffer.writeToBuffer(&fubo);
-			fragBuffer.flush();
+			u_ObjBuffer.writeToBuffer(&u_ObjData, sizeof(ObjectUniformData), dynamicOffset);
+			u_ObjBuffer.flush();
 			vkCmdBindDescriptorSets(
 				frame_content.commandBuffer,
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
 				pipelineLayout,
 				1,
 				1,
-				&frame_content.fragDescriptorSet,
-				0,
-				nullptr);
-
+				&frame_content.objectDescriptorSet,
+				1,
+				&dynamicOffset);
 
 			vkCmdPushConstants(
 				frame_content.commandBuffer,
@@ -165,8 +163,8 @@ namespace aveng {
 				sizeof(SimplePushConstantData),
 				&push);
 
-			obj.model->bind(frame_content.commandBuffer);
-			obj.model->draw(frame_content.commandBuffer);
+			kv.second.model->bind(frame_content.commandBuffer);
+			kv.second.model->draw(frame_content.commandBuffer);
 
 		}
 	}

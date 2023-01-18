@@ -11,7 +11,7 @@ namespace aveng {
 		VkCommandBuffer commandBuffer;
 		AvengCamera& camera;
 		VkDescriptorSet globalDescriptorSet;
-		VkDescriptorSet fragDescriptorSet;
+		VkDescriptorSet objectDescriptorSet;
 		AvengAppObject::Map& appObjects;
 
 	};

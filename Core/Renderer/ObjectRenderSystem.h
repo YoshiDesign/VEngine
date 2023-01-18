@@ -15,8 +15,8 @@ namespace aveng {
 
 	public:
 
-		struct FragUbo {
-			alignas(sizeof(int)) int imDex;
+		struct ObjectUniformData {
+			alignas(16) int texIndex;
 		};
 
 		ObjectRenderSystem(EngineDevice& device, AvengAppObject& viewer);

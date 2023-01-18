@@ -65,7 +65,7 @@ namespace aveng {
 		Renderer renderer{ aveng_window, engineDevice };
 		AvengImgui aveng_imgui{ engineDevice };
 		AvengCamera camera{};
-		GlobalUbo ubo{};
+		GlobalUbo u_GlobalData{};
 		ObjectRenderSystem objectRenderSystem{ engineDevice, viewerObject };
 		PointLightSystem pointLightSystem{ engineDevice };
 		KeyboardController keyboardController{ viewerObject, data };
@@ -77,10 +77,10 @@ namespace aveng {
 		// This declaration must occur after the renderer initializes
 		std::unique_ptr<AvengDescriptorPool> globalPool{};
 
-		std::vector<std::unique_ptr<AvengBuffer>> uboBuffers;
-		std::vector<std::unique_ptr<AvengBuffer>> fragBuffers;
+		std::vector<std::unique_ptr<AvengBuffer>> u_GlobalBuffers;
+		std::vector<std::unique_ptr<AvengBuffer>> u_ObjBuffers;
 		std::vector<VkDescriptorSet> globalDescriptorSets;
-		std::vector<VkDescriptorSet> fragDescriptorSets;
+		std::vector<VkDescriptorSet> objectDescriptorSets;
 
 	};
 
