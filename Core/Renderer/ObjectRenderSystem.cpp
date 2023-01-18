@@ -120,10 +120,11 @@ namespace aveng {
 		{
 			AvengAppObject& obj = kv.second;
 
+			std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
 			// This object's texture's dynamic offset in the Dynamic UBOs memory
-			uint32_t dynamicOffset = obj.get_texture() * static_cast<uint32_t>(deviceAlignment);
+			// uint32_t dynamicOffset = obj.get_texture() * static_cast<uint32_t>(sizeof(FragUbo)) * deviceAlignment;
 
-			FragUbo fubo{ obj.get_texture() };	// Texture information -- within our dynamic UBO (FragUbo is a bad name for this, but that's its only usecase right now)
+			FragUbo fubo{ obj.get_texture() };	// Texture index -- within our dynamic UBO (FragUbo is a bad name for this, but that's its only usecase right now)
 
 			SimplePushConstantData push{};
 			
@@ -137,13 +138,13 @@ namespace aveng {
 			push.normalMatrix = obj.transform.normalMatrix();
 
 
-			if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
+			/*if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
 				DEBUG("Max Uniform Buffer Range Exceeded.");
 				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
-			}
+			}*/
 				
 			// Bind the descriptor set for our pixel (fragment) shader
-			fragBuffer.writeToBuffer(&fubo, sizeof(FragUbo), dynamicOffset);
+			fragBuffer.writeToBuffer(&fubo);
 			fragBuffer.flush();
 			vkCmdBindDescriptorSets(
 				frame_content.commandBuffer,
@@ -152,8 +153,8 @@ namespace aveng {
 				1,
 				1,
 				&frame_content.fragDescriptorSet,
-				1,
-				&dynamicOffset);
+				0,
+				nullptr);
 
 
 			vkCmdPushConstants(

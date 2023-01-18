@@ -197,9 +197,9 @@ namespace aveng {
 		*/
 		globalPool = AvengDescriptorPool::Builder(engineDevice)
 			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
-			// Type							// Max no. of descriptor sets
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 16)
+						 // Type										// Max no. of descriptor sets
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.build();
 
@@ -216,7 +216,7 @@ namespace aveng {
 		}
 		for (int i = 0; i < fragBuffers.size(); i++) {
 			fragBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
-				sizeof(ObjectRenderSystem::FragUbo),
+				sizeof(ObjectRenderSystem::FragUbo) * 16,
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -236,7 +236,7 @@ namespace aveng {
 		// Descriptor Set 1 -- Per object
 		std::unique_ptr<AvengDescriptorSetLayout> fragDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER /*_DYNAMIC*/, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
 		// Write our descriptors according to the layout's bindings once for every possible frame in flight
@@ -246,7 +246,7 @@ namespace aveng {
 		for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			// Write first set - Uniform Buffer containing our UBO and our Imager Sampler
-			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			auto bufferInfo = uboBuffers[i]->descriptorInfo(sizeof(GlobalUbo), 0);
 			auto imageInfo = imageSystem.descriptorInfoForAllImages();
 			std::cout << "Writing Global DescriptorSet" << std::endl;
 			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *globalPool)

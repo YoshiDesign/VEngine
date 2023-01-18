@@ -17,15 +17,14 @@ namespace aveng {
      * Add an individual descriptor definition to 
      * be added to a descriptor set for the layout being constructed
      */
-    AvengDescriptorSetLayout::Builder& 
-    AvengDescriptorSetLayout::Builder::addBinding(
+    AvengDescriptorSetLayout::Builder& AvengDescriptorSetLayout::Builder::addBinding(
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
         uint32_t count) 
     {
      
-        std::cout << "Adding Binding:\t" << binding << "\tCount:\t " << count << "\tType:\t" << descriptorType << "\At Stage:\t" << stageFlags <<  std::endl;
+        std::cout << "Adding Binding:\t" << binding << "\tCount:\t " << count << "\tType:\t" << descriptorType << "\tStage:\t" << stageFlags <<  std::endl;
         assert(assert_layout_bindings.count(binding) == 0 && "Binding already in use");
 
         VkDescriptorSetLayoutBinding layoutBinding{};
@@ -61,8 +60,7 @@ namespace aveng {
         //    setLayoutBindings.push_back(kv.second);
         //}
 
-        // DEBUG YOU FOOL
-        // 
+        // DEBUG
         for (auto lBinding : layout_bindings) 
         {
             std::cout << "----Binding Info:\nBinding:\t" << lBinding.binding

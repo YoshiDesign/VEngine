@@ -2,7 +2,7 @@
 
 #include "../aveng_model.h"
 #include "AvengComponent.h"
-
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 
@@ -30,8 +30,8 @@ namespace aveng {
 		const id_t getId() { return id; }
 		std::unique_ptr<AvengModel> model{};
 
-		int get_texture() { return texture_id; }
-		void set_texture(int texture) { texture_id = texture; }
+		inline int get_texture() { return texture_id; }
+		inline void set_texture(int texture) { texture_id = texture; }
 
 		glm::vec3 color{};
 
