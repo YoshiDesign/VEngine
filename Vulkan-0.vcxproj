@@ -243,12 +243,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
+    <None Include="shaders\ff.frag" />
     <None Include="shaders\point_light.frag" />
     <None Include="shaders\point_light.vert" />
     <None Include="shaders\simple_shader.frag" />
     <None Include="shaders\simple_shader.vert" />
     <None Include="shaders\simple_shader2.frag" />
     <None Include="shaders\simple_shader2.vert" />
+    <None Include="shaders\vv.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include=".gitignore" />

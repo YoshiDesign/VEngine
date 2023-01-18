@@ -286,6 +286,8 @@
     <None Include="compile.bat">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\ff.frag" />
+    <None Include="shaders\vv.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include=".gitignore" />

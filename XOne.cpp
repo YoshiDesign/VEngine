@@ -200,7 +200,7 @@ namespace aveng {
 			// Type							// Max no. of descriptor sets
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 16)
-			//.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.build();
 
 		// Create global uniform buffers mapped into device memory
@@ -216,7 +216,7 @@ namespace aveng {
 		}
 		for (int i = 0; i < fragBuffers.size(); i++) {
 			fragBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
-				sizeof(ObjectRenderSystem::FragUbo) * 8000,
+				sizeof(ObjectRenderSystem::FragUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);

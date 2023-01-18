@@ -136,25 +136,25 @@ namespace aveng {
 			push.modelMatrix  = obj.transform._mat4();
 			push.normalMatrix = obj.transform.normalMatrix();
 
-			{
-				if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
-					DEBUG("Max Uniform Buffer Range Exceeded.");
-					throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
-				}
-				
-				// Bind the descriptor set for our pixel (fragment) shader
-				fragBuffer.writeToBuffer(&fubo, sizeof(FragUbo), dynamicOffset);
-				fragBuffer.flush();
-				vkCmdBindDescriptorSets(
-					frame_content.commandBuffer,
-					VK_PIPELINE_BIND_POINT_GRAPHICS,
-					pipelineLayout,
-					1,
-					1,
-					&frame_content.fragDescriptorSet,
-					1,
-					&dynamicOffset);
+
+			if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
+				DEBUG("Max Uniform Buffer Range Exceeded.");
+				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
 			}
+				
+			// Bind the descriptor set for our pixel (fragment) shader
+			fragBuffer.writeToBuffer(&fubo, sizeof(FragUbo), dynamicOffset);
+			fragBuffer.flush();
+			vkCmdBindDescriptorSets(
+				frame_content.commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				pipelineLayout,
+				1,
+				1,
+				&frame_content.fragDescriptorSet,
+				1,
+				&dynamicOffset);
+
 
 			vkCmdPushConstants(
 				frame_content.commandBuffer,
