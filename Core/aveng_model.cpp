@@ -5,7 +5,7 @@
 #include "aveng_model.h"
 #include "Utils/aveng_utils.h"
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#include <tiny_obj_loader/tiny_obj_loader.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
@@ -258,7 +258,7 @@ namespace aveng {
 				{
 					vertex.position = {
 						attrib.vertices[3 * index.vertex_index + 0],
-						attrib.vertices[3 * index.vertex_index + 1],	// The calculations here just mean we're always looking at values in groups of 3
+						attrib.vertices[3 * index.vertex_index + 1],	// The index calculations are a common convention for indexing into a vector as though it were a 2d matrix
 						attrib.vertices[3 * index.vertex_index + 2],
 					};
 
@@ -304,8 +304,8 @@ namespace aveng {
 			}
 		}
 
-		//std::cout << "Vertices: " << vertices.size() << std::endl;
-		//std::cout << "Indices: " << indices.size() << std::endl;
+		std::cout << filepath << " - Vertices: " << vertices.size() << std::endl;
+		std::cout << filepath << " - Indices: " << indices.size() << std::endl;
 	}
 
 }

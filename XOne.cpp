@@ -152,7 +152,7 @@ namespace aveng {
 		for (size_t i = 0; i < 10; i++)
 		{
 			
-			for (size_t j = 0; j < 10; j++) 
+			for (size_t j = 0; j < 50; j++) 
 			{
 
 				for (size_t k = 0; k < 4; k++) {
@@ -200,17 +200,17 @@ namespace aveng {
 		VkPhysicalDeviceFeatures m;
 		vkGetPhysicalDeviceFeatures(engineDevice.physicalDevice(), &m);
 		if (!m.shaderSampledImageArrayDynamicIndexing) {
+			// If shaderSampledImageArrayDynamicIndexing == 0 the shaders/hardware do not support image samplers
+			// This is currently a requirement to load any sort of texture
 			std::runtime_error("Your hardware does not support this specific VulkanAPI implementation. Sorry!");
 		}
-		else
-			std::cout << "Good to go!" << std::endl;
 
 		/*
-		* Call the pool builder to setup our pool for construction.
-		*/
+		 * Call the pool builder to setup our pool for construction.
+		 */
 		globalPool = AvengDescriptorPool::Builder(engineDevice)
 			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
-						 // Type										// Max no. of descriptor sets
+						 // Type									// Max no. of descriptor sets
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)

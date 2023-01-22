@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;C:\dev\libs\tiny_object_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;C:\dev\vulkan_0\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;C:\dev\libs\tiny_object_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;C:\dev\vulkan_0\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>avpch.h</PrecompiledHeaderFile>

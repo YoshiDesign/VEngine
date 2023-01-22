@@ -23,8 +23,7 @@ namespace aveng {
         VkShaderStageFlags stageFlags,
         uint32_t count) 
     {
-     
-        std::cout << "Adding Binding:\t" << binding << "\tCount:\t " << count << "\tType:\t" << descriptorType << "\tStage:\t" << stageFlags <<  std::endl;
+
         assert(assert_layout_bindings.count(binding) == 0 && "Binding already in use");
 
         VkDescriptorSetLayoutBinding layoutBinding{};

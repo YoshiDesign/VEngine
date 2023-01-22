@@ -16,6 +16,7 @@ namespace aveng {
 	public:
 
 		struct ObjectUniformData {
+			//  Data alignment must be a multiple of VkPhysicalDeviceLimits::minUniformBufferOffsetAlignment
 			alignas(16) int texIndex;
 		};
 

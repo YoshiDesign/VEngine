@@ -137,6 +137,8 @@ namespace aveng {
 			push.modelMatrix  = kv.second.transform._mat4();
 			push.normalMatrix = kv.second.transform.normalMatrix();
 
+			
+
 			/*if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
 				DEBUG("Max Uniform Buffer Range Exceeded.");
 				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
