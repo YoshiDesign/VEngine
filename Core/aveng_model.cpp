@@ -304,8 +304,9 @@ namespace aveng {
 			}
 		}
 
-		std::cout << filepath << " - Vertices: " << vertices.size() << std::endl;
-		std::cout << filepath << " - Indices: " << indices.size() << std::endl;
+		//std::cout << filepath << " - Vertices: " << vertices.size() << std::endl;
+		//std::cout << filepath << " - Indices: " << indices.size() << std::endl;
+
 	}
 
 }
