@@ -109,7 +109,8 @@ namespace aveng {
         void createCommandPool();
 
         // helper functions
-        bool isDeviceSuitable(VkPhysicalDevice device);
+        bool isDiscreteDeviceSuitable(VkPhysicalDevice device);
+        bool isAnyDeviceSuitable(VkPhysicalDevice device);
         std::vector<const char *> getRequiredExtensions();
         bool checkValidationLayerSupport();
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);

@@ -275,6 +275,9 @@
     <ClInclude Include="Core\Renderer\PointLightSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\tiny_obj_loader\tiny_obj_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\simple_shader.vert" />

@@ -176,18 +176,31 @@ namespace aveng {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
+        // Prefer a discreet GPU
         for (const auto &device : devices) 
         {
-            if (isDeviceSuitable(device)) 
+            if (isDiscreteDeviceSuitable(device)) 
             {
                 _physicalDevice = device;
                 break;
             }
         }
 
+        // If no discreet GPU, use integrated graphics
         if (_physicalDevice == VK_NULL_HANDLE) 
         {
-            throw std::runtime_error("failed to find a suitable GPU!");
+            for (const auto& device : devices)
+            {
+                if (isAnyDeviceSuitable(device))
+                {
+                    _physicalDevice = device;
+                    break;
+                }
+            }
+            if (_physicalDevice == VK_NULL_HANDLE)
+            {
+                throw std::runtime_error("failed to find a suitable GPU!");
+            }
         }
 
         vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
@@ -279,9 +292,10 @@ namespace aveng {
     void EngineDevice::createSurface() { window.createWindowSurface(_instance, &_surface); }
 
     /*
-     * Determine if this card includes the necessary properties to support our application
+     * Determine if there is a non-integrated card and
+     * make sure it includes the necessary properties to support our application
      */
-    bool EngineDevice::isDeviceSuitable(VkPhysicalDevice device) 
+    bool EngineDevice::isDiscreteDeviceSuitable(VkPhysicalDevice device) 
     {
 
         // Look for available queue compatibilities within our device
@@ -301,7 +315,47 @@ namespace aveng {
         VkPhysicalDeviceFeatures supportedFeatures;
         vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-        return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        return indices.isComplete() && 
+            deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU 
+            && extensionsSupported 
+            && swapChainAdequate 
+            && supportedFeatures.samplerAnisotropy;
+    }
+
+    /*
+     * If there's no discrete device, we'll use this to search for integrated graphics
+     * and make sure it includes the necessary properties to support our application
+     */
+    bool EngineDevice::isAnyDeviceSuitable(VkPhysicalDevice device)
+    {
+
+        // Look for available queue compatibilities within our device
+        QueueFamilyIndices indices = findQueueFamilies(device);
+
+        // Ensure required extensions are available
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+        bool swapChainAdequate = false;
+        // Query for swapchain support so we can draw to our surface accordingly
+        if (extensionsSupported)
+        {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        VkPhysicalDeviceFeatures supportedFeatures;
+        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        return indices.isComplete()
+            && extensionsSupported
+            && swapChainAdequate
+            && supportedFeatures.samplerAnisotropy;
     }
 
     /**

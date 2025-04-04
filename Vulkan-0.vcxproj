@@ -116,14 +116,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.216.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;C:\dev\vulkan_0\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.4.309.0\Include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.4.bin.WIN64\include;C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glm;$(SolutionDir)\vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.3.4.bin.WIN64\lib-vc2019;C:\VulkanSDK\1.3.216.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft Visual Studio\2022\Community\Libraries\glfw-3.4.bin.WIN64\lib-vc2019;C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -239,6 +239,7 @@
     <ClInclude Include="Core\data.h" />
     <ClInclude Include="Core\UUID.h" />
     <ClInclude Include="Core\Events\window_callbacks.h" />
+    <ClInclude Include="vendor\tiny_obj_loader\tiny_obj_loader.h" />
     <ClInclude Include="XOne.h" />
   </ItemGroup>
   <ItemGroup>

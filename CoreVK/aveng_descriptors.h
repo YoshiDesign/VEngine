@@ -55,7 +55,6 @@ namespace aveng {
             std::vector<VkDescriptorSetLayoutBinding> layout_bindings{};
         };
 
-
         AvengDescriptorSetLayout(EngineDevice& engineDevice, std::vector<VkDescriptorSetLayoutBinding> bindings);
         ~AvengDescriptorSetLayout();
         AvengDescriptorSetLayout(const AvengDescriptorSetLayout&) = delete;

@@ -21,7 +21,7 @@ namespace aveng {
 	XOne::XOne() 
 	{
 		Setup();
-		loadAppObjects();
+		// loadAppObjects();
 	}
 
 	void XOne::run()
