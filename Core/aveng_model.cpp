@@ -128,7 +128,7 @@ namespace aveng {
 
 		if (!hasIndexBuffer) return;
 
-		// Size of a vertex * number of vertices
+		// Size of a vertex * number of indices
 		VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
 		uint32_t indexSize = sizeof(indices[0]);
 
@@ -191,7 +191,8 @@ namespace aveng {
 	{
 		// This VkVertexInputBindingDescription corresponds to a single vertex buffer
 		// it will occupy the binding at index 0.
-		// The stride advances at sizeof(Vertex) bytes per vertex
+		// The stride advances at sizeof(Vertex) bytes per vertex.
+		// There is only 1 for now.
 		/*
 		    uint32_t             binding;
 			uint32_t             stride;
@@ -229,6 +230,9 @@ namespace aveng {
 
 	}
 
+	/*
+	* Note: tinyobjloader doesn't expose any animation data. This is for rendering static mesh's
+	*/
 	void AvengModel::Builder::loadModel(const std::string& filepath)
 	{
 		tinyobj::attrib_t attrib;				// This stores the position, color, normal and texture coord

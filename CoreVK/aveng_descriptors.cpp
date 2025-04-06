@@ -34,7 +34,7 @@ namespace aveng {
         layoutBinding.stageFlags = stageFlags;          // (VK_SHADER_STAGE_VERTEX_BIT) A VkShaderStageFlagBits determining which pipeline shader stages can access this layout binding. 
 
         layout_bindings.push_back(layoutBinding);       // Add the descriptor binding to the vector member
-
+        assert_layout_bindings.insert({binding, layoutBinding});
         return *this;
     }
 
@@ -43,30 +43,26 @@ namespace aveng {
     */
     std::unique_ptr<AvengDescriptorSetLayout> AvengDescriptorSetLayout::Builder::build() const 
     {
+        std::cout << "AvengDescriptorSetLayout Builder::build()" << std::endl;
         // Descriptor Set Layout Builder initializes its parent class
-        return std::make_unique<AvengDescriptorSetLayout>(engineDevice, layout_bindings);
+        return std::make_unique<AvengDescriptorSetLayout>(engineDevice, layout_bindings, assert_layout_bindings);
     }
 
     // *************** Descriptor Set Layout *********************
-    AvengDescriptorSetLayout::AvengDescriptorSetLayout(EngineDevice& device, std::vector<VkDescriptorSetLayoutBinding> layout_bindings)
+    AvengDescriptorSetLayout::AvengDescriptorSetLayout(EngineDevice& device, std::vector<VkDescriptorSetLayoutBinding> layout_bindings, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> _binding_assertions)
         : engineDevice{ device }, layout_bindings{ layout_bindings } // Note that this delivers layout bindings from the Builder to the AvengDescriptorSetLayout
     {
 
-        //std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
-        //for (auto const& kv : layout_bindings) 
-        //{
-        //    std::cout << "Pushing Back:\t" << kv.first << std::endl;
-        //    setLayoutBindings.push_back(kv.second);
-        //}
-
-        // DEBUG
-        for (auto lBinding : layout_bindings) 
-        {
-            std::cout << "----Binding Info:\nBinding:\t" << lBinding.binding
-                << "\nType:\t" << lBinding.descriptorType
-                << "\nNum Descriptors:\t" << lBinding.descriptorCount
-                << "\nStage:\t" << lBinding.stageFlags << std::endl;
+        binding_assertions = _binding_assertions;
+        for (auto kv : binding_assertions) {
+            std::cout << "Constructing descriptor set layout #" << kv.first << std::endl;
+            std::cout << "Binding:\t" << kv.second.binding
+                << "\nType:\t" << kv.second.descriptorType
+                << "\nNum Descriptors:\t" << kv.second.descriptorCount
+                << "\nStage:\t" << kv.second.stageFlags << std::endl;
         }
+
+        std::cout << "Num Layout Bindings (descriptorSetLayoutInfo.bindingCount):\t" << static_cast<uint32_t>(layout_bindings.size())  << std::endl;
 
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo{};
         descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -95,7 +91,6 @@ namespace aveng {
         * typedef struct VkDescriptorPoolSize {
             VkDescriptorType    type;                   // This matches the type of the descriptors it is meant to allocate
             uint32_t            descriptorCount;        // The number of descriptors of that type to allocate
-}           VkDescriptorPoolSize;
         */
         poolSizes.push_back({ descriptorType, count });
         return *this;
@@ -187,11 +182,16 @@ namespace aveng {
     // *************** Descriptor Writer *********************
 
     AvengDescriptorSetWriter::AvengDescriptorSetWriter(AvengDescriptorSetLayout& setLayout, AvengDescriptorPool& pool)
-        : setLayout{ setLayout }, pool{ pool } {}
+        : setLayout{ setLayout }, pool{ pool } {
+        std::cout << "DescriptorSetWriter Constructing:\t" << setLayout.getDescriptorSetLayoutCount() << std::endl;
+    }
 
     AvengDescriptorSetWriter& AvengDescriptorSetWriter::writeBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo) 
     {
-        assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+        std::cout << "Writing Descriptor Set at Binding:\t" << binding << std::endl;
+        std::cout << "Count Bindings\t" << setLayout.binding_assertions.count(binding) << std::endl;
+
+        assert(setLayout.binding_assertions.count(binding) == 1 && "Layout does not contain specified binding");
 
         auto& bindingDescription = setLayout.layout_bindings[binding];
         std::cout << "Binding Descriptor type for Buffer: " << bindingDescription.descriptorType << std::endl;
@@ -213,9 +213,10 @@ namespace aveng {
 
     AvengDescriptorSetWriter& AvengDescriptorSetWriter::writeImage(uint32_t binding, VkDescriptorImageInfo* imageInfo, int nImages) 
     {
-        assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+        std::cout << "writeImage at binding:\t" << binding << std::endl;
+        assert(setLayout.binding_assertions.count(binding) == 1 && "Layout does not contain specified binding");
 
-        auto& bindingDescription = setLayout.layout_bindings[binding];
+        auto& bindingDescription = setLayout.binding_assertions[binding];
 
         std::cout << "Binding Descriptor type for Image: " << bindingDescription.descriptorType << std::endl;
 
@@ -230,7 +231,7 @@ namespace aveng {
         write.dstBinding = binding;                                 // Binding index within this descriptor set
         write.dstArrayElement = 0;
         write.pImageInfo = imageInfo;                               // A pointer to an array of VkDescriptorImageInfo structures or is ignored
-        write.descriptorCount = nImages;
+        write.descriptorCount = bindingDescription.descriptorCount;
         // write.descriptorCount = 1;
 
         writes.push_back(write);

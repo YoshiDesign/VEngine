@@ -72,6 +72,7 @@ namespace aveng {
 
     VkResult SwapChain::acquireNextImage(uint32_t* imageIndex) {
 
+        // CPU/GPU sync
         vkWaitForFences(
             device.device(),
             1,
@@ -80,11 +81,12 @@ namespace aveng {
             std::numeric_limits<uint64_t>::max()
         );
 
+        // Acquire an image from the swap chain
         VkResult result = vkAcquireNextImageKHR(
             device.device(),
             swapChain,
             std::numeric_limits<uint64_t>::max(),
-            imageAvailableSemaphores[currentFrame],  // must be a not signaled semaphore
+            imageAvailableSemaphores[currentFrame],  // Can be an unsignaled semaphore, fence, or both
             VK_NULL_HANDLE,
             imageIndex
         );
@@ -94,8 +96,10 @@ namespace aveng {
 
     VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) 
     {
+        
         if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) 
         {
+            // We don't want to overwrite the current contents of the command buffer while the GPU is using it
             vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
@@ -132,11 +136,11 @@ namespace aveng {
         VkSwapchainKHR swapChains[] = { swapChain };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
-
         presentInfo.pImageIndices = imageIndex;
 
         auto result = vkQueuePresentKHR(device.presentQueue(), &presentInfo);
 
+        // Advance to the next frame
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
         return result;
@@ -145,7 +149,6 @@ namespace aveng {
     void SwapChain::createSwapChain() 
     {
         SwapChainSupportDetails swapChainSupport = device.getSwapChainSupport();
-
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
         VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
@@ -230,6 +233,7 @@ namespace aveng {
         swapChainImageViews.resize(swapChainImages.size());
         for (size_t i = 0; i < swapChainImages.size(); i++)
         {
+            std::cout << "Creating SwapChain Img View " << i << std::endl;
             swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat);
         }
     }
@@ -311,11 +315,7 @@ namespace aveng {
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(
-                device.device(),
-                &framebufferInfo,
-                nullptr,
-                &swapChainFramebuffers[i]) != VK_SUCCESS) {
+            if (vkCreateFramebuffer(device.device(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create framebuffer!");
             }
         }
@@ -383,7 +383,7 @@ namespace aveng {
 
         VkFenceCreateInfo fenceInfo = {};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Fences begin in a signaled state or our renderer would wait indefinitely once it begins
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
@@ -412,7 +412,7 @@ namespace aveng {
 
     VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
     {
-        //
+        // Pro-Tip: VK_PRESENT_MODE_MAILBOX_KHR is probably the most efficient, but more energy intensive so it might not be well suited for mobile applications.
         //for (const auto& availablePresentMode : availablePresentModes) {
         //    if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
         //        std::cout << "Present mode: Mailbox" << std::endl;

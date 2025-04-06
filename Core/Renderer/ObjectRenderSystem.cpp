@@ -120,7 +120,8 @@ namespace aveng {
 		{
 			//AvengAppObject& obj = kv.second;
 
-			//std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;			//std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
+			// std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
+			// 
 			// This object's texture-index's dynamic offset in the Dynamic UBOs memory
 			uint32_t dynamicOffset = kv.second.get_texture() * sizeof(ObjectUniformData);
 
@@ -136,8 +137,6 @@ namespace aveng {
 			// The matrix describing this model's current orientation
 			push.modelMatrix  = kv.second.transform._mat4();
 			push.normalMatrix = kv.second.transform.normalMatrix();
-
-			
 
 			/*if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
 				DEBUG("Max Uniform Buffer Range Exceeded.");

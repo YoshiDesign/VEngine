@@ -54,6 +54,12 @@ namespace aveng {
         usageFlags{ usageFlags },
         memoryPropertyFlags{ memoryPropertyFlags } 
     {
+        std::cout << "Initializing AvengBuffer" 
+            << "\nUsageFlag\t" << usageFlags
+            << "\nInstance Count\t" << instanceCount 
+            << "\nminOffsetAlignment\t" << minOffsetAlignment 
+        << std::endl;
+
         alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
         bufferSize = alignmentSize * instanceCount;
 

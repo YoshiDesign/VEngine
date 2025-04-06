@@ -79,6 +79,9 @@ namespace aveng {
 		auto& bindingDescriptions = configInfo.bindingDescriptions;
 		auto& attributeDescriptions = configInfo.attributeDescriptions;
 
+		std::cout << "GFXPipeline (attributeDescriptions.size()):\t" << attributeDescriptions.size() << std::endl;
+		std::cout << "GFXPipeline (bindingDescriptions.size()):\t" << bindingDescriptions.size() << std::endl;
+
 		// Struct to describe how we interperet our vertex buffer data as initial input into our pipeline
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType							= VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -99,7 +102,7 @@ namespace aveng {
 		//viewportInfo.flags = 0;
 		//viewportInfo.pNext = nullptr;
 
-		// Collect all of the necessary configurations and 
+		//
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType				= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount			= 2;

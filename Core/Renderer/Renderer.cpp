@@ -22,9 +22,14 @@ namespace aveng {
 		freeCommandBuffers();
 	}
 
+	/*
+	* Note: Recreating the swapchain isn't sufficient if the image format changes
+	* such as the window being moved to a different monitor. In that event it would
+	* be necessary to recreate the renderpass.
+	 */
 	void Renderer::recreateSwapChain()
 	{
-		// Gety current window size
+		// Get current window size
 		auto extent = aveng_window.getExtent();
 
 		// If the program has at least 1 dimension of 0 size (it's minimized); wait
@@ -36,7 +41,6 @@ namespace aveng {
 
 		// Wait until the current swap chain isn't being used before we attempt to construct the next one.
 		vkDeviceWaitIdle(engineDevice.device());
-
 	
 		aveng_swapchain = nullptr;
 
@@ -144,6 +148,10 @@ namespace aveng {
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || aveng_window.wasWindowResized())
 		{
+			/*
+			* Possible TODO: `vkResetFences(device, 1, &inFlightFences[currentFrame]);` if VK_ERROR_OUT_OF_DATE_KHR
+			* Forgetting to do this could create a deadlock
+			*/
 			aveng_window.resetWindowResizedFlag();
 			recreateSwapChain();
 		}
@@ -153,6 +161,7 @@ namespace aveng {
 		}
 
 		isFrameStarted = false;
+		// Advance to the next image
 		currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 
 	}

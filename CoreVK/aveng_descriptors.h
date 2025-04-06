@@ -48,6 +48,7 @@ namespace aveng {
             Builder(EngineDevice& device);
             Builder& addBinding(uint32_t binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint32_t count = 1);
             std::unique_ptr<AvengDescriptorSetLayout> build() const;
+            
 
         private:
             EngineDevice& engineDevice;
@@ -55,18 +56,19 @@ namespace aveng {
             std::vector<VkDescriptorSetLayoutBinding> layout_bindings{};
         };
 
-        AvengDescriptorSetLayout(EngineDevice& engineDevice, std::vector<VkDescriptorSetLayoutBinding> bindings);
+        AvengDescriptorSetLayout(EngineDevice& engineDevice, std::vector<VkDescriptorSetLayoutBinding> bindings, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> binding_assertions);
         ~AvengDescriptorSetLayout();
         AvengDescriptorSetLayout(const AvengDescriptorSetLayout&) = delete;
         AvengDescriptorSetLayout& operator=(const AvengDescriptorSetLayout&) = delete;
 
         VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }
+        size_t getDescriptorSetLayoutCount() { return layout_bindings.size(); }
 
     private:
         EngineDevice& engineDevice;
         VkDescriptorSetLayout descriptorSetLayout;
         std::vector<VkDescriptorSetLayoutBinding> layout_bindings;
-        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings;
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> binding_assertions; // Come from Builder::assert_layout_bindings
 
         // This idea is implemented in AvengImageSystem because it requires image views
         //VkDescriptorImageInfo descriptorImageInfos[TEXTURE_ARRAY_SIZE]{ {},{} };

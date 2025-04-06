@@ -187,6 +187,7 @@ namespace aveng {
         }
 
         // If no discreet GPU, use integrated graphics
+        // Very quick implementation. (See: https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html for a better one)
         if (_physicalDevice == VK_NULL_HANDLE) 
         {
             for (const auto& device : devices)
@@ -670,7 +671,7 @@ namespace aveng {
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(_device, buffer, &memRequirements);
 
-        // Allocate the buffer's memory
+        // Allocate the buffer's memory. Yet another info/action setup convention
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;

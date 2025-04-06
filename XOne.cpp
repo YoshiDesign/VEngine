@@ -37,7 +37,7 @@ namespace aveng {
 		viewerObject.transform.translation.z = -5.5f;
 		viewerObject.transform.translation.y = -2.5f;
 
-		// Keep the window open until shouldClose is truthy
+		// Render Loop
 		while (!aveng_window.shouldClose()) {
 
 			// Potentially blocking
@@ -201,7 +201,7 @@ namespace aveng {
 		vkGetPhysicalDeviceFeatures(engineDevice.physicalDevice(), &m);
 		if (!m.shaderSampledImageArrayDynamicIndexing) {
 			// If shaderSampledImageArrayDynamicIndexing == 0 the shaders/hardware do not support image samplers
-			// This is currently a requirement to load any sort of texture
+			// This is required to load any sort of texture
 			std::runtime_error("Your hardware does not support this specific VulkanAPI implementation. Sorry!");
 		}
 
@@ -209,16 +209,17 @@ namespace aveng {
 		 * Call the pool builder to setup our pool for construction.
 		 */
 		globalPool = AvengDescriptorPool::Builder(engineDevice)
-			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
+			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 3)
 						 // Type									// Max no. of descriptor sets
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
 			.build();
 
-		// Create global uniform buffers mapped into device memory
+		// Create uniform buffers mapped into device memory
 		u_GlobalBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 		u_ObjBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
 		for (int i = 0; i < u_GlobalBuffers.size(); i++) {
 			u_GlobalBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
 				sizeof(GlobalUbo),
@@ -227,6 +228,7 @@ namespace aveng {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 			u_GlobalBuffers[i]->map();
 		}
+
 		for (int i = 0; i < u_ObjBuffers.size(); i++) {
 			u_ObjBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
 				sizeof(ObjectRenderSystem::ObjectUniformData) * 16,
@@ -236,20 +238,19 @@ namespace aveng {
 			u_ObjBuffers[i]->map();
 		}
 
-		std::cout << "Creating global Descriptor set and adding bindings (2)..." << std::endl;
+		std::cout << "XOne -- Creating global Descriptors" << std::endl;
 		// Descriptor Layout 0 -- Global
 		std::unique_ptr<AvengDescriptorSetLayout> globalDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 8)
-			//.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();	// Initialize the Descriptor Set Layout
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, 1)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1)
+			.build();
 
-		std::cout << "Creating obj Descriptor set and adding bindings (1)..." << std::endl;
+		std::cout << "XOne -- Creating obj Descriptors" << std::endl;
 		// Descriptor Set 1 -- Per object
 		std::unique_ptr<AvengDescriptorSetLayout> objDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT, 1)
 			.build();
 
 		// Write our descriptors according to the layout's bindings once for every possible frame in flight
@@ -263,8 +264,8 @@ namespace aveng {
 			auto imageInfo = imageSystem.descriptorInfoForAllImages();
 			std::cout << "Writing Global DescriptorSet" << std::endl;
 			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *globalPool)
-				.writeBuffer(0, &bufferInfo)	// First Binding
-				.writeImage(1, imageInfo.data(), imageSystem.texture_paths.size()) // Second Binding
+				.writeBuffer(0, &bufferInfo)	// First Binding descriptor: Buffer
+				.writeImage(1, imageInfo.data(), imageSystem.texture_paths.size()) // Second Binding descriptor: Image
 				.build(globalDescriptorSets[i]);
 
 			std::cout << "Writing Object DescriptorSet" << std::endl;
