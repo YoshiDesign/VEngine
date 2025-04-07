@@ -44,6 +44,7 @@ namespace aveng {
 	AvengModel::AvengModel(EngineDevice& device, std::vector<AvengModel::Vertex> vertices, std::vector<uint32_t> indices)
 		: engineDevice{ device }
 	{
+		std::cout << "Instantiating Model..." << std::endl;
 		createVertexBuffers(vertices); // The vertex shader takes input from a vertex buffer from `layout(location = n) in vec3 vertexAttribute`. The vertexAttribute is defined by the vertex Buffer
 		createIndexBuffers(indices);
 	}
@@ -242,6 +243,7 @@ namespace aveng {
 
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
 		{
+			std::cerr << "Warning: " << warn << "\nError: " << err << std::endl;
 			throw std::runtime_error(warn + err);
 		}
 

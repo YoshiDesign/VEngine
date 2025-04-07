@@ -46,9 +46,11 @@ namespace aveng {
 	{
 		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create window surface");
+			// TODO - More concise debugging. For example one might check for VK_ERROR_EXTENSION_NOT_PRESENT or first perform vkDestroySurfaceKHR
+			throw std::runtime_error("GLFW failed to create the window surface.");
 		}
 	}
+
 	bool AvengWindow::shouldClose() { return glfwWindowShouldClose(window); }
 
 	void AvengWindow::framebufferResizedCallback(GLFWwindow* window, int width, int height)

@@ -54,14 +54,20 @@ namespace aveng {
         usageFlags{ usageFlags },
         memoryPropertyFlags{ memoryPropertyFlags } 
     {
-        std::cout << "Initializing AvengBuffer" 
-            << "\nUsageFlag\t" << usageFlags
-            << "\nInstance Count\t" << instanceCount 
-            << "\nminOffsetAlignment\t" << minOffsetAlignment 
-        << std::endl;
 
         alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
         bufferSize = alignmentSize * instanceCount;
+
+        if (usageFlags == VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) {
+
+            std::cout << "Creating Uniform Buffer\n"
+                << "instanceSize\t" << instanceSize
+                << "\ninstanceCount\t" << instanceCount
+                << "\nMinimumOffsetAlignment\t" << minOffsetAlignment
+                << "\nAlignmentSize\t" << alignmentSize 
+                << std::endl;
+
+        }
 
         // Call to engineDevice
         device.createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);

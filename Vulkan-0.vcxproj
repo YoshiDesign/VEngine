@@ -261,6 +261,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\grid.png" />
+    <Image Include="textures\grid2.png" />
+    <Image Include="textures\sm1.png" />
+    <Image Include="textures\sm2.png" />
+    <Image Include="textures\sm3.png" />
+    <Image Include="textures\sm4.png" />
     <Image Include="textures\theme1.png" />
     <Image Include="textures\theme2.png" />
     <Image Include="textures\theme3.png" />

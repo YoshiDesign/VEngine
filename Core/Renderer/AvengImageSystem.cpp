@@ -7,7 +7,7 @@
 
 /*
 *	This class is not responsible for rendering. Here we are creating our VkImageSamplers and ImageViews
-*	Along with ImageDescriptors, TextureSamplers and the like. This enables the Sampler in our Frag. shader
+*	Along with ImageDescriptors, TextureSamplers and the like. This enables the Sampler in our frag shader
 * 
 * From the Vulkan Tutorial:
 	All of the helper functions that submit commands so far have been set up to execute synchronously 
@@ -367,7 +367,9 @@ namespace aveng {
 
 	void ImageSystem::createImageDescriptors(std::vector<VkImageView> views)
 	{
+
 		for (VkImageView view : views) {
+
 			// Image Descriptor
 			VkDescriptorImageInfo descriptorImageInfo{};
 			descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -377,6 +379,7 @@ namespace aveng {
 			imageInfosArray.push_back(descriptorImageInfo);
 
 		}
+		std::cout << "Created " << imageInfosArray.size() << " image descriptors." << std::endl;
 	}
 
 }

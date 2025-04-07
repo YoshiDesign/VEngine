@@ -100,7 +100,7 @@ namespace aveng {
 			default:
 				gfxPipeline->bind(frame_content.commandBuffer); // 0
 		}
-		
+
 		vkCmdBindDescriptorSets(
 			frame_content.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -118,12 +118,14 @@ namespace aveng {
 		*/
 		for (auto& kv : frame_content.appObjects)
 		{
-			//AvengAppObject& obj = kv.second;
+			//if (kv.second.get_texture() == 3) {
+			//	std::cout << "Device Alignment: " << deviceAlignment << "\nObjectUniformData: " << sizeof(ObjectUniformData) << std::endl;
 
-			// std::cout << "Device Alignment: " << deviceAlignment << "\tFragUbo: " << sizeof(FragUbo) << std::endl;
+			//}
+			
 			// 
 			// This object's texture-index's dynamic offset in the Dynamic UBOs memory
-			uint32_t dynamicOffset = kv.second.get_texture() * sizeof(ObjectUniformData);
+			uint32_t dynamicOffset = 0;// kv.second.get_texture() * engineDevice.properties.limits.minUniformBufferOffsetAlignment; // (sizeof(ObjectUniformData) * 4);
 
 			ObjectUniformData u_ObjData{ kv.second.get_texture() };	// Contains texture index
 
@@ -138,14 +140,16 @@ namespace aveng {
 			push.modelMatrix  = kv.second.transform._mat4();
 			push.normalMatrix = kv.second.transform.normalMatrix();
 
-			/*if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
+			// Remove this for any release builds
+			if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
 				DEBUG("Max Uniform Buffer Range Exceeded.");
 				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
-			}*/
+			}
 
 			// Bind the descriptor set for our pixel (fragment) shader
 			u_ObjBuffer.writeToBuffer(&u_ObjData, sizeof(ObjectUniformData), dynamicOffset);
 			u_ObjBuffer.flush();
+
 			vkCmdBindDescriptorSets(
 				frame_content.commandBuffer,
 				VK_PIPELINE_BIND_POINT_GRAPHICS,

@@ -76,7 +76,7 @@ namespace aveng {
 
         // The surface is Vulkan's connection to our Window from GLFW.
         // This calls createWindowSurface from our _window class which is why
-        // you will find it included in EnginDevice.hpp
+        // EnginDevice is constructed with a AvengWindow reference.
         createSurface();
 
         // Choose your weapon (GPU), or multiple of them (super advanced)
@@ -115,9 +115,9 @@ namespace aveng {
 
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Zero App";
+        appInfo.pApplicationName = "Avenge - Zero";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "NonEngine";
+        appInfo.pEngineName = "Avenge";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -129,9 +129,10 @@ namespace aveng {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
-        // [Validators] Create this instance's Debug Validation Layer
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         if (enableValidationLayers) {
+            // [Validators] Create this instance's Debug Validation Layer
+            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
 
@@ -186,7 +187,7 @@ namespace aveng {
             }
         }
 
-        // If no discreet GPU, use integrated graphics
+        // If no discreet GPU is present, use integrated graphics.
         // Very quick implementation. (See: https://docs.vulkan.org/tutorial/latest/03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html for a better one)
         if (_physicalDevice == VK_NULL_HANDLE) 
         {
@@ -209,18 +210,21 @@ namespace aveng {
     }
 
     /*
-     *  Creation of a logical device.
+     * Creation of a logical device.
+     * This is the Vulkan instance's representation of our physical device.
      */
     void EngineDevice::createLogicalDevice() {
-
-        // Collect our indicies; available Queues
+        /*
+        * Get an enumeration of our required queue families. 
+        * Note that these were already queried while selecting a suitable device.
+        */
         QueueFamilyIndices indices = findQueueFamilies(_physicalDevice);
 
         // For config
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
-        // A complete config for each pipeline phase instance (don't quote me here)
+        // Configure the CreateInfo for each Queue, adding each to our vector
         float queuePriority = 1.0f;
         for (uint32_t queueFamily : uniqueQueueFamilies) 
         {
@@ -230,7 +234,7 @@ namespace aveng {
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
-            // Push it onto our configs
+            // Push it onto our Queue configs
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
@@ -249,7 +253,7 @@ namespace aveng {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-        // This might not really be necessary anymore because
+        // [!] This might not really be necessary anymore because
         // device specific validation layers have been deprecated
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -283,12 +287,12 @@ namespace aveng {
 
         if (vkCreateCommandPool(_device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS) 
         {
-            throw std::runtime_error("failed to create command pool!");
+            throw std::runtime_error("[EngineDevice] Failed to create a command pool!");
         }
     }
 
     /**
-    * Call to our _window class to create the window surface with GLFW
+    * Call to our window ref to create the window surface with GLFW
     */
     void EngineDevice::createSurface() { window.createWindowSurface(_instance, &_surface); }
 
@@ -306,6 +310,7 @@ namespace aveng {
         bool extensionsSupported = checkDeviceExtensionSupport(device);
 
         bool swapChainAdequate = false;
+
         // Query for swapchain support so we can draw to our surface accordingly
         if (extensionsSupported) 
         {
@@ -422,6 +427,7 @@ namespace aveng {
 
             if (!layerFound) 
             {
+                std::cout << "[Error - Validation Layer Not Found] " << layerName << std::endl;
                 return false;
             }
         }
@@ -521,13 +527,14 @@ namespace aveng {
 
     /**
     * Figure out the queue families supported by the device.
+    * In this implementation we require Graphics and Presentation queues
     */
     QueueFamilyIndices EngineDevice::findQueueFamilies(VkPhysicalDevice device) 
     {
 
         QueueFamilyIndices indices;
 
-        // Enumerate
+        // Enumerate each queue available on our device
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
@@ -546,8 +553,8 @@ namespace aveng {
                 indices.graphicsFamilyHasValue = true;
             }
 
-            VkBool32 presentSupport = false;
             //  Look for a queue family that has the capability of presenting to our window surface
+            VkBool32 presentSupport = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, _surface, &presentSupport);
 
             // Find a presentation queue. This could very well be the same thing as the graphics queue

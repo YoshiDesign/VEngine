@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../Core/aveng_window.h"
-
-// std lib headers
 #include <string>
 #include <vector>
 
@@ -129,4 +127,4 @@ namespace aveng {
         const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     };
 
-}  // namespace lve
+}

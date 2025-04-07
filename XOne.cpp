@@ -21,7 +21,7 @@ namespace aveng {
 	XOne::XOne() 
 	{
 		Setup();
-		// loadAppObjects();
+		loadAppObjects();
 	}
 
 	void XOne::run()
@@ -104,15 +104,19 @@ namespace aveng {
 	void XOne::loadAppObjects() 
 	{
 
-		auto ship = AvengAppObject::createAppObject(THEME_1);
-		ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship_demo.obj");
-		ship.transform.translation = { 0.f, 0.f, 0.f };
-		appObjects.emplace(ship.getId(), std::move(ship));
+		//auto ship = AvengAppObject::createAppObject(THEME_1);
+		//ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship.obj");
+		//ship.transform.translation = { 0.f, 0.f, 0.f };
+		//appObjects.emplace(ship.getId(), std::move(ship));
 
 		auto ship_1 = AvengAppObject::createAppObject(THEME_3);
-		ship_1.model = AvengModel::createModelFromFile(engineDevice, "3D/ship_demo.obj");
+		ship_1.model = AvengModel::createModelFromFile(engineDevice, "3D/ship.obj");
 		ship_1.transform.translation = { 25.f, 0.f, 0.f };
 		appObjects.emplace(ship_1.getId(), std::move(ship_1));
+
+		// AvengModel::drawTriangle(engineDevice, { 1.0f, 1.0f, 1.0f });
+
+
 
 		//for (size_t i = 0; i < 1; i++)
 		//{
@@ -149,7 +153,7 @@ namespace aveng {
 		//	}
 		//}
 
-		for (size_t i = 0; i < 10; i++)
+		/*for (size_t i = 0; i < 10; i++)
 		{
 			
 			for (size_t j = 0; j < 50; j++) 
@@ -167,7 +171,7 @@ namespace aveng {
 			
 			}
 
-		}
+		}*/
 
 	}
 
@@ -208,12 +212,12 @@ namespace aveng {
 		/*
 		 * Call the pool builder to setup our pool for construction.
 		 */
-		globalPool = AvengDescriptorPool::Builder(engineDevice)
-			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 3)
+		descriptorPool = AvengDescriptorPool::Builder(engineDevice)
+			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
 						 // Type									// Max no. of descriptor sets
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
 			.build();
 
 		// Create uniform buffers mapped into device memory
@@ -231,10 +235,11 @@ namespace aveng {
 
 		for (int i = 0; i < u_ObjBuffers.size(); i++) {
 			u_ObjBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
-				sizeof(ObjectRenderSystem::ObjectUniformData) * 16,
+				sizeof(ObjectRenderSystem::ObjectUniformData),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+				engineDevice.properties.limits.minUniformBufferOffsetAlignment);
 			u_ObjBuffers[i]->map();
 		}
 
@@ -243,35 +248,36 @@ namespace aveng {
 		std::unique_ptr<AvengDescriptorSetLayout> globalDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, 1)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 8)
 			.build();
 
 		std::cout << "XOne -- Creating obj Descriptors" << std::endl;
 		// Descriptor Set 1 -- Per object
 		std::unique_ptr<AvengDescriptorSetLayout> objDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT, 1)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL_GRAPHICS, 1)
 			.build();
 
-		// Write our descriptors according to the layout's bindings once for every possible frame in flight
+		// Write our descriptors according to the layout's bindings once for each frame in flight
 		globalDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 		objectDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
+		// Create the descriptor sets, once for each swapchain frame
 		for (int i = 0; i < SwapChain::MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			// Write first set - Uniform Buffer containing our UBO and our Imager Sampler
+			// Write first set - Uniform Buffer containing our global-UBO and our Imager Sampler
 			auto bufferInfo = u_GlobalBuffers[i]->descriptorInfo(sizeof(GlobalUbo), 0);
 			auto imageInfo = imageSystem.descriptorInfoForAllImages();
 			std::cout << "Writing Global DescriptorSet" << std::endl;
-			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *globalPool)
+			AvengDescriptorSetWriter(*globalDescriptorSetLayout, *descriptorPool)
 				.writeBuffer(0, &bufferInfo)	// First Binding descriptor: Buffer
-				.writeImage(1, imageInfo.data(), imageSystem.texture_paths.size()) // Second Binding descriptor: Image
+				.writeImage(1, imageInfo.data(), imageInfo.size()) // Second Binding descriptor: Image
 				.build(globalDescriptorSets[i]);
 
 			std::cout << "Writing Object DescriptorSet" << std::endl;
 			// Write second set - Also a uniform buffer
 			auto objBufferInfo = u_ObjBuffers[i]->descriptorInfo(sizeof(ObjectRenderSystem::ObjectUniformData), 0);
-			AvengDescriptorSetWriter(*objDescriptorSetLayout, *globalPool)
+			AvengDescriptorSetWriter(*objDescriptorSetLayout, *descriptorPool)
 				.writeBuffer(0, &objBufferInfo)
 				.build(objectDescriptorSets[i]);
 		}

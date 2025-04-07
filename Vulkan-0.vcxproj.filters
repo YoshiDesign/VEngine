@@ -317,5 +317,20 @@
     <Image Include="textures\theme4.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="textures\grid2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\sm1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\sm2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\sm3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\sm4.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

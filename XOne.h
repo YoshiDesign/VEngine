@@ -49,16 +49,16 @@ namespace aveng {
 		void Setup();
 		void updateCamera(float frameTime, AvengAppObject& viewerObject, KeyboardController& cameraController, AvengCamera& camera);
 		void updateData();
-
-		// The window API - Stack allocated
-		AvengWindow aveng_window{ WIDTH, HEIGHT, "Vulkan 0" };
 		glm::vec3 clear_color = { 0.0f, 0.0f, 0.0f };
 
 		/*
 		* !! Order of member initialization matters !!
-		* section 12.6.2 of the C++ Standard
+		* See: § 12.6.2 of the C++ Standard
 		*/
+
 		Data data;
+		// The window API - Stack allocated
+		AvengWindow aveng_window{ WIDTH, HEIGHT, "Vulkan 0" };
 		AvengAppObject viewerObject{ AvengAppObject::createAppObject(1000) };
 		EngineDevice engineDevice{ aveng_window };
 		ImageSystem imageSystem{ engineDevice };
@@ -75,7 +75,7 @@ namespace aveng {
 		AvengAppObject::Map appObjects;
 
 		// This declaration must occur after the renderer initializes
-		std::unique_ptr<AvengDescriptorPool> globalPool{};
+		std::unique_ptr<AvengDescriptorPool> descriptorPool{};
 
 		std::vector<std::unique_ptr<AvengBuffer>> u_GlobalBuffers;
 		std::vector<std::unique_ptr<AvengBuffer>> u_ObjBuffers;
