@@ -92,6 +92,12 @@ namespace aveng {
 	void ObjectRenderSystem::render(FrameContent& frame_content, Data& data, AvengBuffer& u_ObjBuffer)
 	{
 
+		// 1s tick, convenient
+		if (last_sec != data.sec) {
+			last_sec = data.sec;
+			std::cout << "Tick..." << std::endl;
+		}
+
 		// Bind our current pipeline configuration
 		switch (data.cur_pipe)
 		{
@@ -116,32 +122,21 @@ namespace aveng {
 		/*
 		* Thread object bind/draw calls here
 		*/
+		int i = 0;
 		for (auto& kv : frame_content.appObjects)
 		{
-			//if (kv.second.get_texture() == 3) {
-			//	std::cout << "Device Alignment: " << deviceAlignment << "\nObjectUniformData: " << sizeof(ObjectUniformData) << std::endl;
-
-			//}
-			
-			// 
-			// This object's texture-index's dynamic offset in the Dynamic UBOs memory
-			uint32_t dynamicOffset = 0;// kv.second.get_texture() * engineDevice.properties.limits.minUniformBufferOffsetAlignment; // (sizeof(ObjectUniformData) * 4);
-
+			i++;
 			ObjectUniformData u_ObjData{ kv.second.get_texture() };	// Contains texture index
 
+			// Push Constant Data
 			SimplePushConstantData push{};
-			
-			// 1s tick, convenient
-			if (last_sec != data.sec) {
-				last_sec  = data.sec;
-			}
-
-			// The matrix describing this model's current orientation
 			push.modelMatrix  = kv.second.transform._mat4();
 			push.normalMatrix = kv.second.transform.normalMatrix();
 
-			// Remove this for any release builds
+			uint32_t dynamicOffset = engineDevice.properties.limits.minUniformBufferOffsetAlignment * i;
 			if (dynamicOffset > engineDevice.properties.limits.maxUniformBufferRange) {
+			    //This will (should) never occur because we're taking measurments from the same source when instantiating the dynamic uniform buffer
+				// Remove this for any release builds
 				DEBUG("Max Uniform Buffer Range Exceeded.");
 				throw std::runtime_error("Attempting to allocate buffer beyond device uniform buffer memory limit.");
 			}

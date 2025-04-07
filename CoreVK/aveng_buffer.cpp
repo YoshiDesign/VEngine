@@ -180,12 +180,12 @@ namespace aveng {
      *
      * @return VkDescriptorBufferInfo of specified offset and range
      */
-    VkDescriptorBufferInfo AvengBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) 
+    VkDescriptorBufferInfo AvengBuffer::descriptorInfo(VkDeviceSize range, VkDeviceSize offset) 
     {
         return VkDescriptorBufferInfo {
             buffer,
             offset,
-            size,
+            range
         };
     }
 

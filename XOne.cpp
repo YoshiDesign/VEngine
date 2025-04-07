@@ -20,8 +20,9 @@ namespace aveng {
 
 	XOne::XOne() 
 	{
-		Setup();
 		loadAppObjects();
+		Setup();
+		
 	}
 
 	void XOne::run()
@@ -104,10 +105,10 @@ namespace aveng {
 	void XOne::loadAppObjects() 
 	{
 
-		//auto ship = AvengAppObject::createAppObject(THEME_1);
-		//ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship.obj");
-		//ship.transform.translation = { 0.f, 0.f, 0.f };
-		//appObjects.emplace(ship.getId(), std::move(ship));
+		auto ship = AvengAppObject::createAppObject(THEME_1);
+		ship.model = AvengModel::createModelFromFile(engineDevice, "3D/ship.obj");
+		ship.transform.translation = { 0.f, 0.f, 0.f };
+		appObjects.emplace(ship.getId(), std::move(ship));
 
 		auto ship_1 = AvengAppObject::createAppObject(THEME_3);
 		ship_1.model = AvengModel::createModelFromFile(engineDevice, "3D/ship.obj");
@@ -200,6 +201,14 @@ namespace aveng {
 	*/
 	void XOne::Setup()
 	{
+		std::cout << "Initializing App Setup..." << std::endl;
+		std::cout << "MinUniformbufferOffsetAlignment" << engineDevice.properties.limits.minUniformBufferOffsetAlignment
+			<< "\nSize of Dynamic Uniform Buffer:\t" <<
+			sizeof(ObjectRenderSystem::ObjectUniformData)
+			* engineDevice.properties.limits.minUniformBufferOffsetAlignment
+			* appObjects.size() << " Bytes"
+			<< "\nSize of ObjectUniformBuffer Data\t" << sizeof(ObjectRenderSystem::ObjectUniformData)
+			<< std::endl;
 
 		VkPhysicalDeviceFeatures m;
 		vkGetPhysicalDeviceFeatures(engineDevice.physicalDevice(), &m);
@@ -215,9 +224,9 @@ namespace aveng {
 		descriptorPool = AvengDescriptorPool::Builder(engineDevice)
 			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
 						 // Type									// Max no. of descriptor sets
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,			SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 8)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
 			.build();
 
 		// Create uniform buffers mapped into device memory
@@ -233,9 +242,15 @@ namespace aveng {
 			u_GlobalBuffers[i]->map();
 		}
 
+		if (sizeof(ObjectRenderSystem::ObjectUniformData) > engineDevice.properties.limits.minUniformBufferOffsetAlignment)
+		{
+			// We'll need to update our alignment should this ever be the case.
+			throw std::runtime_error("ObjectUniformData is larger than the minimum offset alignment. Uniform Data size needs to be updated.");
+		}
+
 		for (int i = 0; i < u_ObjBuffers.size(); i++) {
 			u_ObjBuffers[i] = std::make_unique<AvengBuffer>(engineDevice,
-				sizeof(ObjectRenderSystem::ObjectUniformData),
+				sizeof(ObjectRenderSystem::ObjectUniformData) * engineDevice.properties.limits.minUniformBufferOffsetAlignment * appObjects.size(), // The size <VkDeviceSize> of the dynamic uniform buffer 
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -248,7 +263,7 @@ namespace aveng {
 		std::unique_ptr<AvengDescriptorSetLayout> globalDescriptorSetLayout =
 			AvengDescriptorSetLayout::Builder(engineDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, 1)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 8)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, imageSystem.descriptorInfoForAllImages().size())	// Combined image samplers use 1 descriptor for each image
 			.build();
 
 		std::cout << "XOne -- Creating obj Descriptors" << std::endl;
